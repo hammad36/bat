@@ -1,6 +1,5 @@
 <?php
 
-$connection = null;
 try {
     $connection = new PDO(
         'mysql:host=localhost;dbname=php_pdo',
@@ -12,4 +11,5 @@ try {
         )
     );
 } catch (PDOException $e) {
+    echo 'Connection failed: ' . $e->getMessage();
 }

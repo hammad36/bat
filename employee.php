@@ -9,11 +9,8 @@ class employee
     public $empTax;
     public $empSalary;
 
+    public function calculateSalary()
     {
-        $this->empName = $empName;
-        $this->empAge = $empAge;
-        $this->empTax = $empTax;
-        $this->empSalary = $empSalary;
+        return $this->empSalary - ($this->empSalary * $this->empTax / 100);
     }
-    public function __construct($empName, $empAge, $empTax, $empSalary)
 }

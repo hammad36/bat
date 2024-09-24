@@ -95,6 +95,10 @@ h1 {
     margin-bottom: 25px;
 }
 
+.message .error{
+    color: red;
+}
+
 /* Employee List Section */
 .employees {
     background-color: #ffffff;

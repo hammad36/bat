@@ -8,19 +8,32 @@ if (isset($_POST['submit'])) {
     $empName = filter_input(INPUT_POST, 'empName', FILTER_SANITIZE_STRING);
     $empAge = filter_input(INPUT_POST, 'empAge', FILTER_SANITIZE_NUMBER_INT);
     $empAddress = filter_input(INPUT_POST, 'empAddress', FILTER_SANITIZE_STRING);
-    $empSalary = filter_input(INPUT_POST, 'empSalary', FILTER_SANITIZE_NUMBER_FLOAT);
-    $empTax = filter_input(INPUT_POST, 'empTax', FILTER_SANITIZE_NUMBER_FLOAT);
+    $empSalary = filter_input(INPUT_POST, 'empSalary', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+    $empTax = filter_input(INPUT_POST, 'empTax', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
     $employee = new employee($empName, $empAge, $empSalary, $empTax);
+    $employee->empName = $empName;
+    $employee->empAge = $empAge;
     $employee->empAddress = $empAddress;
+    $employee->empSalary = $empSalary;
+    $employee->empTax = $empTax;
 
+    $sql = 'INSERT INTO employees (empName, empAge, empAddress, empSalary, empTax) VALUES ("' . $empName . '", ' . $empAge . ',
+            "' . $empAddress . '", ' . $empSalary . ', ' . $empTax . ')';
 
-    if ($connection->exec('INSERT INTO employees SET name ="' . $empName . '"')) {
+    //inserting or updating in database
+    if ($connection->exec($sql)) {
         $message = 'Employee ' . $empName . ' inserted successfully';
     } else {
+        $error = true;
         $message = 'Error inserting ' . $empName;
     }
 }
+//reading from database back
+$sql = 'SELECT * FROM employees';
+$stmt = $connection->query($sql);
+$result = $stmt->fetchAll(PDO::FETCH_CLASS, 'employee');
+$result = (is_array($result) && !empty($result)) ? $result : false;
 
 ?>
 
@@ -38,9 +51,11 @@ if (isset($_POST['submit'])) {
     <div class="wrapper">
         <!-- Form Section -->
         <section class="form-section">
-            <h1>Add a New Employee</h1>
+            <h1>Register a New Employee</h1>
             <form class="appForm" method="post" enctype="application/x-www-form-urlencoded">
-                <p class="message"><?= isset($message) ? $message : '' ?></p>
+                <?php if (isset($message)) { ?>
+                    <p class="message <?= isset($error) ? 'error' : '' ?>"><?= $message ?></p>
+                <?php } ?>
                 <div class="form-group">
                     <label for="empName">Employee Name:</label>
                     <input type="text" id="empName" name="empName" placeholder="Enter employee name">
@@ -82,34 +97,25 @@ if (isset($_POST['submit'])) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <th>Mohammed</th>
-                        <th>23</th>
-                        <th>Zagazig</th>
-                        <th>14000</th>
-                        <th>12</th>
-                    </tr>
-                    <tr>
-                        <th>ahmed</th>
-                        <th>16</th>
-                        <th>Alex</th>
-                        <th>5000</th>
-                        <th>4</th>
-                    </tr>
-                    <tr>
-                        <th>ahmed</th>
-                        <th>16</th>
-                        <th>Alex</th>
-                        <th>5000</th>
-                        <th>4</th>
-                    </tr>
-                    <tr>
-                        <th>ahmed</th>
-                        <th>16</th>
-                        <th>Alex</th>
-                        <th>5000</th>
-                        <th>4</th>
-                    </tr>
+                    <?php
+                    if (false !== $result) {
+                        foreach ($result as $employee) {
+                    ?>
+                            <tr>
+                                <td><?= $employee->empName ?></td>
+                                <td><?= $employee->empAge ?></td>
+                                <td><?= $employee->empAddress ?></td>
+                                <td><?= round($employee->calculateSalary()) ?> L.E</td>
+                                <td><?= $employee->empTax ?></td>
+                            </tr>
+                        <?php
+                        }
+                    } else {
+                        ?>
+                        <td colspan="5">Sorry no employees to list</td>
+                    <?php
+                    }
+                    ?>
                 </tbody>
             </table>
         </section>
